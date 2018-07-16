@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.fraudprevention.headervalidators.impl
 
-import java.net.Inet4Address
+import uk.gov.hmrc.fraudprevention.headervalidators.RegexHeaderValidator
 
-import uk.gov.hmrc.fraudprevention.headervalidators.IpAddressHeaderValidator
+import scala.util.matching.Regex
 
-object GovClientPublicIpHeaderValidator extends IpAddressHeaderValidator {
+object GovClientDeviceIdHeaderValidator extends RegexHeaderValidator {
 
-  override val headerName: String = "Gov-Client-Public-IP"
+  override val headerName: String = "Gov-Client-Device-ID"
 
-  override protected def isAllowedIp: Inet4Address => Boolean = {
-    isPublicIpAddress
-  }
+  // TODO: check regex to be verified
+  override protected val headerValueRegexPattern: Regex = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}".r
 
 }

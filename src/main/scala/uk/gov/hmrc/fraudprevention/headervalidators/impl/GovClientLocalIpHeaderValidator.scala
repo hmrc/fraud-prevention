@@ -20,12 +20,12 @@ import java.net.Inet4Address
 
 import uk.gov.hmrc.fraudprevention.headervalidators.IpAddressHeaderValidator
 
-object GovClientPublicIpHeaderValidator extends IpAddressHeaderValidator {
+object GovClientLocalIpHeaderValidator extends IpAddressHeaderValidator {
 
-  override val headerName: String = "Gov-Client-Public-IP"
+  override val headerName: String = "Gov-Client-Local-IP"
 
   override protected def isAllowedIp: Inet4Address => Boolean = {
-    isPublicIpAddress
+    isPrivateIpAddress
   }
 
 }

@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fraudprevention.headervalidators.impl
+package uk.gov.hmrc.fraudprevention.headervalidators
 
-import java.net.Inet4Address
+import play.api.mvc.RequestHeader
 
-import uk.gov.hmrc.fraudprevention.headervalidators.IpAddressHeaderValidator
+import scala.util.matching.Regex
 
-object GovClientPublicIpHeaderValidator extends IpAddressHeaderValidator {
+trait RegexHeaderValidator extends HeaderValidator {
 
-  override val headerName: String = "Gov-Client-Public-IP"
+  protected def headerValueRegexPattern: Regex
 
-  override protected def isAllowedIp: Inet4Address => Boolean = {
-    isPublicIpAddress
+  override final def isValidHeader(request: RequestHeader): Boolean = {
+    hasOneHeaderValueOnly(request) && requestHeaderValues(request, headerName).forall(hasMatch)
+  }
+
+  private def hasMatch: String => Boolean = {
+    headerValueRegexPattern.findFirstIn(_).nonEmpty
   }
 
 }

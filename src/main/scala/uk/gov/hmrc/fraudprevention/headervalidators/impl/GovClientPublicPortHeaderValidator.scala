@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.fraudprevention.headervalidators.impl
 
+import play.api.mvc.RequestHeader
 import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
 
 import scala.util.{Success, Try}
@@ -24,11 +25,19 @@ object GovClientPublicPortHeaderValidator extends HeaderValidator {
 
   override val headerName: String = "Gov-Client-Public-Port"
 
-  override def isValidHeader(headerValues: Option[Seq[String]]): Boolean = {
-    Try (headerValues map ( _ map ( _.toInt ) ) exists ( _.forall { p => p > 0 && p <= 65535 } )) match {
-      case Success(isValid: Boolean) => isValid
+  override def isValidHeader(request: RequestHeader): Boolean = {
+    hasOneHeaderValueOnly(request) && isValidPortNumber(request)
+  }
+
+  private def isValidPortNumber(request: RequestHeader): Boolean = {
+    Try ( requestHeaderValues(request, headerName) map ( _.toInt ) ) match {
+      case Success(ports: Seq[Int]) => ports forall isAllowedNumber
       case _ => false
     }
+  }
+
+  private def isAllowedNumber: Int => Boolean = { p =>
+    p > 0 && p <= 65535
   }
 
 }

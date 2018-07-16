@@ -32,50 +32,64 @@ package uk.gov.hmrc.fraudprevention.headervalidators.impl
  * limitations under the License.
  */
 
+import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
 import uk.gov.hmrc.play.test.UnitSpec
 
-class GovClientPublicIpHeaderValidatorSpec extends UnitSpec {
+class GovClientPublicIpHeaderValidatorSpec extends UnitSpec with HeaderValidatorBaseSpec {
 
-  "GovClientPublicIpHeaderValidator" should {
+  // TODO: separate scenarios in blocks
+  // TODO: tests for each (test all possible ip address that are not public!!!)
 
-    s"fail to validate the $headerName header if there is no value" in {
-      validateIpAddresses(None) shouldBe false
+  "IpAddressHeaderValidator" should {
+
+    s"fail to validate the ${headerValidator.headerName} header if there is no value" in {
+      validate(None) shouldBe false
     }
 
-    s"fail to validate the $headerName header if it is the empty string" in {
-      validateIpAddresses(Some(Seq(""))) shouldBe false
+    s"fail to validate the ${headerValidator.headerName} header if it is the empty string" in {
+      validate(Some(Seq(""))) shouldBe false
     }
 
-    s"fail to validate the $headerName header if it does not contain 4 groups" in {
-      validateIpAddresses(Some(Seq("192.168.1.1.2.3"))) shouldBe false
+    s"fail to validate the ${headerValidator.headerName} header if it does not contain 4 groups" in {
+      validate(Some(Seq("192.168.1.1.2.3"))) shouldBe false
     }
 
-    s"fail to validate the $headerName header if a group does not contain digits" in {
-      validateIpAddresses(Some(Seq("192.168.1.1w"))) shouldBe false
+    s"fail to validate the ${headerValidator.headerName} header if a group does not contain digits" in {
+      validate(Some(Seq("192.168.1.www"))) shouldBe false
     }
 
-    s"fail to validate the $headerName header if a group contains a number > 255" in {
-      validateIpAddresses(Some(Seq("192.168.1.256"))) shouldBe false
+    s"fail to validate the ${headerValidator.headerName} header if a group contains a number > 255" in {
+      validate(Some(Seq("192.168.1.256"))) shouldBe false
     }
 
-    s"fail to validate the $headerName header if a group contains an IP address in IPv6 format" in {
-      validateIpAddresses(Some(Seq("001:db8:0:1234:0:567:8:1"))) shouldBe false
+    s"fail to validate the ${headerValidator.headerName} header if a group contains an IP address in IPv6 format" in {
+      validate(Some(Seq("001:db8:0:1234:0:567:8:1"))) shouldBe false
     }
 
-    s"fail to validate the $headerName header if one of the header values is invalid" in {
-      validateIpAddresses(Some(Seq("192.168.1.156", "1.1.1.356", "8.8.8.8"))) shouldBe false
+    s"fail to validate the ${headerValidator.headerName} header if it is a private IP address" in {
+      validate(Some(Seq("10.1.2.3"))) shouldBe false
     }
 
-    s"validate the $headerName header if all the values are valid IP addresses using the IPv4 format" in {
-      validateIpAddresses(Some(Seq("192.168.1.255", "1.1.1.1", "8.8.8.8"))) shouldBe true
+    s"fail to validate the ${headerValidator.headerName} header if it is localhost" in {
+      validate(Some(Seq("127.0.0.1"))) shouldBe false
     }
 
+    s"fail to validate the ${headerValidator.headerName} header if it is link local" in {
+      validate(Some(Seq("169.254.0.0"))) shouldBe false
+    }
+
+    s"fail to validate the ${headerValidator.headerName} header if the header contains multiple values" in {
+      validate(Some(Seq("192.168.1.156", "8.8.8.8"))) shouldBe false
+    }
+
+    s"validate the ${headerValidator.headerName} header if there is only one value using the IPv4 format" in {
+      validate(Some(Seq("191.168.1.254"))) shouldBe true
+    }
+
+    // TODO: validate better all scenarios
+    //  https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
   }
 
-  private def headerName: String = GovClientPublicIpHeaderValidator.headerName
-
-  private def validateIpAddresses(ipAddresses: Option[Seq[String]]): Boolean = {
-    GovClientPublicIpHeaderValidator.isValidHeader(ipAddresses)
-  }
+  override protected def headerValidator: HeaderValidator = GovClientPublicIpHeaderValidator
 
 }

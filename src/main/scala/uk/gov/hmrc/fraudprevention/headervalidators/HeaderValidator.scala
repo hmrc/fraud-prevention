@@ -16,10 +16,24 @@
 
 package uk.gov.hmrc.fraudprevention.headervalidators
 
-trait HeaderValidator {
+import play.api.mvc.RequestHeader
+
+trait HeaderValidatorUtils {
+
+  protected def requestHeaderValues(request: RequestHeader, headerName: String): Seq[String] = {
+    request.headers.toMap.getOrElse(headerName, Seq())
+  }
+
+}
+
+trait HeaderValidator extends HeaderValidatorUtils {
+
+  protected def hasOneHeaderValueOnly(request: RequestHeader): Boolean = {
+    requestHeaderValues(request, headerName).size == 1
+  }
 
   def headerName: String
 
-  def isValidHeader(headerValues: Option[Seq[String]]): Boolean
+  def isValidHeader(request: RequestHeader): Boolean
 
 }

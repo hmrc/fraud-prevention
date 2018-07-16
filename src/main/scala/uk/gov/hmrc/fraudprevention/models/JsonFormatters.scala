@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fraudprevention.headervalidators.impl
+package uk.gov.hmrc.fraudprevention.models
 
-import java.net.Inet4Address
+import play.api.libs.json.Json
 
-import uk.gov.hmrc.fraudprevention.headervalidators.IpAddressHeaderValidator
+object JsonFormatters {
 
-object GovClientPublicIpHeaderValidator extends IpAddressHeaderValidator {
-
-  override val headerName: String = "Gov-Client-Public-IP"
-
-  override protected def isAllowedIp: Inet4Address => Boolean = {
-    isPublicIpAddress
-  }
-
+  implicit val formatNoFraudAnswer = Json.format[NoFraudAnswer]
 }
