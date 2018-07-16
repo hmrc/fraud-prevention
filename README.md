@@ -3,7 +3,16 @@
 
  [ ![Download](https://api.bintray.com/packages/hmrc/releases/fraud-prevention/images/download.svg) ](https://bintray.com/hmrc/releases/fraud-prevention/_latestVersion)
 
-This is a placeholder README.md for a new repository
+Library that supports fraud detection on APIs.
+
+
+TODO: more info
+
+
+dire che devi usare play 2.5
+
+
+---
 
 ### License
 
