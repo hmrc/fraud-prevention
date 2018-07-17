@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.fraudprevention
 
-import play.api.Logger
 import play.api.http.Status.PRECONDITION_FAILED
 import play.api.libs.json.{Json, OFormat}
 import play.api.mvc._
@@ -24,7 +23,6 @@ import uk.gov.hmrc.fraudprevention.headervalidators.{HeaderValidator, HeaderVali
 import uk.gov.hmrc.fraudprevention.headervalidators.impl._
 
 import scala.concurrent.Future
-import scala.util.{Failure, Try}
 
 case class ErrorResponse(errorCode: String, message: String)
 
@@ -46,60 +44,58 @@ trait ErrorConversion {
   implicit def toResult(error: ErrorResponse)(implicit request: RequestHeader): Result = Status(PRECONDITION_FAILED)(Json.toJson(error))
 }
 
+object AntiFraudHeadersValidator extends HeaderValidatorUtils {
 
-trait AntiFraudHeadersValidator extends ErrorConversion with HeaderValidatorUtils {
+  // TODO: all these headers - https://developer.service.hmrc.gov.uk/api-documentation/docs/reference-guide
+  private lazy val requiredHeaderValidators: List[HeaderValidator] = List(
+    GovClientPublicIpHeaderValidator,
+    GovClientLocalIpHeaderValidator,
+    GovClientPublicPortHeaderValidator,
+    GovClientDeviceIdHeaderValidator
+  )
 
-  // TODO: improve - use predicates ?!
-  private def getHeaderValidator: String => HeaderValidator = {
-    case "Gov-Client-Public-IP"   => GovClientPublicIpHeaderValidator
-    case "Gov-Client-Local-IP"    => GovClientLocalIpHeaderValidator
-    case "Gov-Client-Public-Port" => GovClientPublicPortHeaderValidator
-    case "Gov-Client-Device-ID"   => GovClientDeviceIdHeaderValidator
+  private lazy val requiredHeaderNames: List[String] = requiredHeaderValidators.map(_.headerName)
+
+  // to be called at start-up of the API microservice
+  def buildRequiredHeaderValidators(requiredHeaders: List[String]): List[HeaderValidator] = {
+
+    val (invalidHeaderNames, validHeaderNames): (List[String], List[String]) = requiredHeaders.partition( requiredHeaderNames.contains )
+
+    if (invalidHeaderNames.nonEmpty) {
+      throw new IllegalArgumentException(s"There are no implementations for these headers: ${invalidHeaderNames.mkString(", ")}")
+    }
+
+    requiredHeaderValidators.filter(h => validHeaderNames.contains(h.headerName))
   }
 
-  private def isMissingImplementation: String => Boolean = { str =>
-    Try ( getHeaderValidator(str) ) match {
-      case Failure(_) => true
-      case _ => false
-    }
-  }
-
-  def retrieveErrors(requiredHeaders: List[String], request: RequestHeader): Option[String] = {
-
-    val missingImplementations = requiredHeaders.filter ( isMissingImplementation )
-
-    if (missingImplementations.nonEmpty) {
-      Logger.warn(s"There are no validator implementations for these headers: ${missingImplementations.mkString(", ")}")
-    }
-
-//  TODO: use cats with applicative errors
-
-    val missingOrInvalidHeaderValues: List[String] = requiredHeaders.filterNot(isMissingImplementation)
-      .filterNot(getHeaderValidator(_).isValidHeader(request))
-
-    missingOrInvalidHeaderValues match {
-      case Nil => None
-      case errors: List[String] => Some(s"Missing or invalid headers: ${errors.mkString(", ")}")
-    }
-
+  // to be called for each API incoming request
+  def missingOrInvalidHeaderValues(requiredHeaders: List[HeaderValidator])(request: RequestHeader): List[String] = {
+    requiredHeaders.filterNot(_.isValidHeader(request)).map(_.headerName)
   }
 
 }
 
+object AntiFraudHeadersValidatorActionFilter extends ErrorConversion {
 
+  def filterFromHeaderNames(requiredHeaders: List[String]) = {
+    val requiredHeaderValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
+    filterFromHeaderValidators(requiredHeaderValidators)
+  }
 
+  def filterFromHeaderValidators(requiredHeaderValidators: List[HeaderValidator]) = new ActionBuilder[Request] with ActionFilter[Request] {
 
-object AntiFraudHeadersValidator extends AntiFraudHeadersValidator {
-
-  def fraudPreventionFilter[A] (requiredHeaders: List[String]) = new ActionBuilder[Request] with ActionFilter[Request] {
-
-    // TODO: fix warning type parameter
     override protected def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
+
       implicit val r: Request[A] = request
-      retrieveErrors(requiredHeaders, request).map(ErrorResponse.buildErrorMessage)
+
+      val missingOrInvalidHeaderValues = AntiFraudHeadersValidator.missingOrInvalidHeaderValues(requiredHeaderValidators)(request) match {
+        case Nil => None
+        case errors: List[String] => Some(s"Missing or invalid headers: ${errors.mkString(", ")}")
+      }
+
+      missingOrInvalidHeaderValues.map(ErrorResponse.buildErrorMessage)
     }
 
   }
 
 }
-
