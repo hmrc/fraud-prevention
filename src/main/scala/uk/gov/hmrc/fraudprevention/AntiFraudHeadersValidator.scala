@@ -17,13 +17,13 @@
 package uk.gov.hmrc.fraudprevention
 
 import play.api.mvc._
-import uk.gov.hmrc.fraudprevention.headervalidators.{HeaderValidator, HeaderValidatorUtils}
+import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
 import uk.gov.hmrc.fraudprevention.headervalidators.impl._
 import uk.gov.hmrc.fraudprevention.model.{ErrorConversion, ErrorResponse}
 
 import scala.concurrent.Future
 
-object AntiFraudHeadersValidator extends HeaderValidatorUtils {
+object AntiFraudHeadersValidator {
 
   private lazy val requiredHeaderValidators: List[HeaderValidator] = List(
     GovClientPublicPortHeaderValidator
@@ -68,7 +68,7 @@ object AntiFraudHeadersValidatorActionFilter extends ErrorConversion {
         case errors: List[String] => Some(s"Missing or invalid headers: ${errors.mkString(", ")}")
       }
 
-      missingOrInvalidHeaderValues.map(ErrorResponse.buildErrorMessage)
+      missingOrInvalidHeaderValues.map(ErrorResponse(_))
     }
 
   }

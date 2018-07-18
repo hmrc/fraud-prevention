@@ -24,7 +24,7 @@ class ErrorResponseSpec extends UnitSpec {
 
     "build the correct error response" in {
       val msg = "Something is broken"
-      ErrorResponse.buildErrorMessage(msg) shouldBe ErrorResponse("MISSING_OR_INVALID_HEADERS", msg)
+      ErrorResponse(msg) shouldBe ErrorResponse("MISSING_OR_INVALID_HEADERS", msg)
     }
 
   }

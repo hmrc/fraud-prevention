@@ -21,7 +21,7 @@ case class ErrorResponse(errorCode: String, message: String)
 
 case object ErrorResponse {
 
-  def buildErrorMessage(errorMsg: String): ErrorResponse = {
+  def apply(errorMsg: String): ErrorResponse = {
     ErrorResponse("MISSING_OR_INVALID_HEADERS", errorMsg)
   }
 
