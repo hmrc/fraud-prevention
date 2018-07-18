@@ -27,11 +27,9 @@ lazy val library = (project in file("."))
     targetJvm := "jvm-1.8",
     crossScalaVersions := Seq("2.11.11"),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play"              % "2.5.12" % "provided",
-//      // TODO: we probably do not need this dependency
-      //      "commons-validator" %  "commons-validator" % "1.6",
-      "org.scalatest"     %% "scalatest"         % "3.0.4"  % "test",
-      "uk.gov.hmrc"       %% "hmrctest"          % "2.3.0"  % "test"
+      "com.typesafe.play" %% "play"      % "2.5.12" % "provided",
+      "org.scalatest"     %% "scalatest" % "3.0.4"  % "test",
+      "uk.gov.hmrc"       %% "hmrctest"  % "2.3.0"  % "test"
     ),
     resolvers := Seq(
       Resolver.bintrayRepo("hmrc", "releases")

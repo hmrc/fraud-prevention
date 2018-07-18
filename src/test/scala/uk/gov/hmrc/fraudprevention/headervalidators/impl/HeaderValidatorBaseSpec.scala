@@ -37,6 +37,8 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
 import uk.gov.hmrc.play.test.UnitSpec
 
+// TODO: add integration test for testing the Play thing !?
+
 trait HeaderValidatorBaseSpec extends UnitSpec {
 
   protected def buildRequest(headerValues: Option[Seq[String]], headerName: String): Request[AnyContent] = {
