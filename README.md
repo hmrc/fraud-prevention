@@ -3,7 +3,7 @@
 
  [ ![Download](https://api.bintray.com/packages/hmrc/releases/fraud-prevention/images/download.svg) ](https://bintray.com/hmrc/releases/fraud-prevention/_latestVersion)
 
-This Play library supports API producers to validate headers on the incoming requests to their APIs.
+This Play library helps API producers to validate headers on incoming requests to their APIs.
 More information can be found [here](https://developer.service.hmrc.gov.uk/api-documentation/docs/reference-guide#fraud-prevention).
 
 ## Installing
@@ -21,8 +21,8 @@ Note that the library is only available for Play 2.5.x.
 ## Usage
 
 The library can be used for rejecting requests that have missing headers or have headers with invalid values.
-We made available a Play `ActionFilter` called `AntiFraudHeadersValidatorActionFilter` and a Scala object called `AntiFraudHeadersValidator`.
-Your API controllers could use either of the two approaches.
+We made available a Scala object called `AntiFraudHeadersValidator` and a Play `ActionFilter` called `AntiFraudHeadersValidatorActionFilter`.
+Your API controllers can use either of these two approaches.
 
 If you use `AntiFraudHeadersValidator`, you first need to initialise the header validators:
 ``` scala
@@ -46,9 +46,9 @@ AntiFraudHeadersValidator.missingOrInvalidHeaderValues(headerValidators) match {
 ```
 
 If you use the `AntiFraudHeadersValidatorActionFilter`, your controller would look simpler.
-There are two possible implementations we suggest.
+We suggest two alternative implementations.
 
-By creating the Play `ActionFilter` from the required header names:
+1. By creating the Play `ActionFilter` from the required header names:
 ``` scala
 
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
@@ -63,7 +63,7 @@ def handleRequest(): Action[AnyContent] = fraudPreventionActionFilter.async { im
 }
 ```
 
-By creating the Play `ActionFilter` from the header validators:
+2. By creating the Play `ActionFilter` from the header validators:
 ``` scala
 
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
