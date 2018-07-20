@@ -3,7 +3,7 @@
 
  [ ![Download](https://api.bintray.com/packages/hmrc/releases/fraud-prevention/images/download.svg) ](https://bintray.com/hmrc/releases/fraud-prevention/_latestVersion)
 
-This Play library supports API producers to validate request headers on the incoming requests to their APIs.
+This Play library supports API producers to validate headers on the incoming requests to their APIs.
 More information can be found [here](https://developer.service.hmrc.gov.uk/api-documentation/docs/reference-guide#fraud-prevention).
 
 ## Installing
