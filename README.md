@@ -46,7 +46,7 @@ AntiFraudHeadersValidator.missingOrInvalidHeaderValues(headerValidators) match {
 ```
 
 If you use the `AntiFraudHeadersValidatorActionFilter`, your controller would look simpler.
-There are two possible implementations we suggest:
+There are two possible implementations we suggest.
 
 By creating the Play `ActionFilter` from the required header names:
 ``` scala
