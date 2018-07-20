@@ -25,22 +25,22 @@ import scala.concurrent.Future
 
 object AntiFraudHeadersValidator {
 
-  private lazy val requiredHeaderValidators: List[HeaderValidator] = List(
+  private lazy val headerValidators: List[HeaderValidator] = List(
     GovClientPublicPortHeaderValidator
   )
 
-  private lazy val requiredHeaderNames: List[String] = requiredHeaderValidators.map(_.headerName)
+  private lazy val headerNames: List[String] = headerValidators.map(_.headerName)
 
   // to be called only once, at start-up of the API microservice
   def buildRequiredHeaderValidators(requiredHeaders: List[String]): List[HeaderValidator] = {
 
-    val (validHeaderNames, invalidHeaderNames) = requiredHeaders.partition ( requiredHeaderNames.contains )
+    val (validatedHeaders, unsupportedHeaders) = requiredHeaders.partition ( headerNames.contains )
 
-    if (invalidHeaderNames.nonEmpty) {
-      throw new IllegalArgumentException(s"There are no implementations for these headers: ${invalidHeaderNames.mkString(", ")}")
+    if (unsupportedHeaders.nonEmpty) {
+      throw new IllegalArgumentException(s"There are no implementations for these headers: ${unsupportedHeaders.mkString(", ")}")
     }
 
-    requiredHeaderValidators.filter ( h => validHeaderNames.contains ( h.headerName ) )
+    headerValidators.filter ( h => validatedHeaders.contains ( h.headerName ) )
   }
 
   // to be called for each API incoming request
