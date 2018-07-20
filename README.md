@@ -68,8 +68,8 @@ By creating the Play `ActionFilter` from the header validators:
 
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
-lazy private val requiredHeaders = List("Gov-Client-Public-Port")
-lazy private val headerValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
+lazy val requiredHeaders = List("Gov-Client-Public-Port")
+lazy val headerValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
 
 // this can be reused for each controller that require the same headers
 lazy val fraudPreventionActionFilter = AntiFraudHeadersValidatorActionFilter.actionFilterFromHeaderValidators(headerValidators)
