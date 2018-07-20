@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fraudprevention.model
 
 
-case class ErrorResponse(errorCode: String, message: String)
+case class ErrorResponse(code: String, message: String)
 
 case object ErrorResponse {
 
