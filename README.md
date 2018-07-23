@@ -24,25 +24,30 @@ The library can be used for rejecting requests that have missing headers or have
 We made available a Scala object called `AntiFraudHeadersValidator` and a Play `ActionFilter` called `AntiFraudHeadersValidatorActionFilter`.
 Your API controllers can use either of these two approaches.
 
-If you use `AntiFraudHeadersValidator`, you first need to initialise the header validators:
+If you use `AntiFraudHeadersValidator`, you first need to have the header validators.
+For example, assuming that you want to validate the _Gov-Client-Public-Port_ header only, this is the code you need:
 ``` scala
+import uk.gov.hmrc.fraudprevention.headervalidators.impl.GovClientPublicPortHeaderValidator
 
+val headerValidators = List(GovClientPublicPortHeaderValidator)
+```
+
+You can also initialise the headers from the header names:
+``` scala
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
 val requiredHeaders = List("Gov-Client-Public-Port")
 val headerValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
 ```
 
-Then, for each incoming request to the API, your controllers have to execute the following code:
+Then, once you have the validators for the required headers, for each incoming request to the API, your controllers have to execute the following code:
 ``` scala
-
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
 AntiFraudHeadersValidator.missingOrInvalidHeaderValues(headerValidators) match {
   case None => // you should continue processing the request
   case Some(missingOrInvalidHeaders: List[String]) => // you should block the request (because of the missing or invalid headers)
 }
-
 ```
 
 If you use the `AntiFraudHeadersValidatorActionFilter`, your controller would look simpler.
@@ -50,7 +55,6 @@ We suggest two alternative implementations.
 
 1. By creating the Play `ActionFilter` from the required header names:
 ``` scala
-
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
 lazy val requiredHeaders = List("Gov-Client-Public-Port")
@@ -65,8 +69,8 @@ def handleRequest(): Action[AnyContent] = fraudPreventionActionFilter.async { im
 
 2. By creating the Play `ActionFilter` from the header validators:
 ``` scala
-
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
+import uk.gov.hmrc.fraudprevention.headervalidators.impl.GovClientPublicPortHeaderValidator
 
 lazy val headerValidators = List(GovClientPublicPortHeaderValidator)
 
