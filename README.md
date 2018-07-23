@@ -40,7 +40,7 @@ import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
 AntiFraudHeadersValidator.missingOrInvalidHeaderValues(headerValidators) match {
   case None => // you should continue processing the request
-  case Some(missingOrInvalidHeaders: List[String]) => //  you should block the request (because of the missing or invalid headers)
+  case Some(missingOrInvalidHeaders: List[String]) => // you should block the request (because of the missing or invalid headers)
 }
 
 ```
@@ -68,8 +68,7 @@ def handleRequest(): Action[AnyContent] = fraudPreventionActionFilter.async { im
 
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
-lazy val requiredHeaders = List("Gov-Client-Public-Port")
-lazy val headerValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
+lazy val headerValidators = List(GovClientPublicPortHeaderValidator)
 
 // this can be reused for each controller that require the same headers
 lazy val fraudPreventionActionFilter = AntiFraudHeadersValidatorActionFilter.actionFilterFromHeaderValidators(headerValidators)
