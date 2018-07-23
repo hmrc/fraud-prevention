@@ -24,15 +24,15 @@ The library can be used for rejecting requests that have missing headers or have
 We made available a Scala object called `AntiFraudHeadersValidator` and a Play `ActionFilter` called `AntiFraudHeadersValidatorActionFilter`.
 Your API controllers can use either of these two approaches.
 
-If you use `AntiFraudHeadersValidator`, you first need to have the header validators.
-For example, assuming that you want to validate the _Gov-Client-Public-Port_ header only, this is the code you need:
+If you use `AntiFraudHeadersValidator`, you first need the header validators.
+As example, assuming that you want to validate the _Gov-Client-Public-Port_ header only, this is the code you need:
 ``` scala
 import uk.gov.hmrc.fraudprevention.headervalidators.impl.GovClientPublicPortHeaderValidator
 
 val headerValidators = List(GovClientPublicPortHeaderValidator)
 ```
 
-You can also initialise the headers from the header names:
+You can also initialise the validators from the header names:
 ``` scala
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
@@ -40,7 +40,7 @@ val requiredHeaders = List("Gov-Client-Public-Port")
 val headerValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
 ```
 
-Then, once you have the validators for the required headers, for each incoming request to the API, your controllers have to execute the following code:
+Then, once you have the validators for all your required headers, for each incoming request to the API, your controllers have to execute the following code:
 ``` scala
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
