@@ -25,7 +25,7 @@ We made available a Scala object called `AntiFraudHeadersValidator` and a Play `
 Your API controllers can use either of these two approaches.
 
 If you use `AntiFraudHeadersValidator`, you first need the header validators.
-As example, assuming that you want to validate the _Gov-Client-Public-Port_ header only, this is the code you need:
+As an example, assuming that you want to validate the _Gov-Client-Public-Port_ header only, this is the code you need:
 ``` scala
 import uk.gov.hmrc.fraudprevention.headervalidators.impl.GovClientPublicPortHeaderValidator
 
