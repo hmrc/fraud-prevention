@@ -44,7 +44,7 @@ Then, once you have the validators for all your required headers, for each incom
 ``` scala
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
-AntiFraudHeadersValidator.missingOrInvalidHeaderValues(headerValidators) match {
+AntiFraudHeadersValidator.missingOrInvalidHeaderValues(headerValidators)(request) match {
   case None => // you should continue processing the request
   case Some(missingOrInvalidHeaders: List[String]) => // you should block the request (because of the missing or invalid headers)
 }
