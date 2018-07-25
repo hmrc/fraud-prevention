@@ -1,1 +1,5 @@
 digital-service: API Platform
+leakDetectionExemptions:
+ - ruleId: 'ip_addresses'
+   filePaths:
+      - '/src/test/scala/uk/gov/hmrc/fraudprevention/headervalidators/impl/GovClientPublicIpHeaderValidatorSpec.scala'
