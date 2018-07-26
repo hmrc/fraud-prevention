@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.fraudprevention
 
+import cats.data.NonEmptyList
+import cats.data.Validated.{Invalid, Valid}
+import cats.implicits._
 import play.api.mvc._
 import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
 import uk.gov.hmrc.fraudprevention.headervalidators.impl._
+import uk.gov.hmrc.fraudprevention.model.HeadersValidation.HeadersValidation
 import uk.gov.hmrc.fraudprevention.model.{ErrorConversion, ErrorResponse}
 
 import scala.concurrent.Future
@@ -26,15 +30,16 @@ import scala.concurrent.Future
 object AntiFraudHeadersValidator {
 
   private lazy val headerValidators: List[HeaderValidator] = List(
-    GovClientPublicPortHeaderValidator
+    GovClientPublicPortHeaderValidator,
+    GovClientColourDepthHeaderValidator
   )
 
   private lazy val headerNames: List[String] = headerValidators.map(_.headerName)
 
-  // to be called only once, at start-up of the API microservice
+  // To be called only once, at start-up of the API microservice
   def buildRequiredHeaderValidators(requiredHeaders: List[String]): List[HeaderValidator] = {
 
-    val (validatedHeaders, unsupportedHeaders) = requiredHeaders.partition ( headerNames.contains )
+    val (validatedHeaders, unsupportedHeaders) = requiredHeaders.partition( headerNames.contains )
 
     if (unsupportedHeaders.nonEmpty) {
       throw new IllegalArgumentException(s"There are no implementations for these headers: ${unsupportedHeaders.mkString(", ")}")
@@ -43,9 +48,11 @@ object AntiFraudHeadersValidator {
     headerValidators.filter ( h => validatedHeaders.contains ( h.headerName ) )
   }
 
-  // to be called for each API incoming request
-  def missingOrInvalidHeaderValues(requiredHeaders: List[HeaderValidator])(request: RequestHeader): List[String] = {
-    requiredHeaders.filterNot ( _.isValidHeader(request) ).map( _.headerName )
+  // To be called for each API incoming request
+  def validate(requiredHeaders: List[HeaderValidator])(request: RequestHeader): HeadersValidation = {
+    // Might be better to return Either[String, Unit] instead of ValidatedNel[String, Unit]
+    // so that the Cats is hidden to our library users
+    requiredHeaders.map( _.validate(request) ).combineAll
   }
 
 }
@@ -63,12 +70,13 @@ object AntiFraudHeadersValidatorActionFilter extends ErrorConversion {
 
       implicit val r: Request[A] = request
 
-      val missingOrInvalidHeaderValues = AntiFraudHeadersValidator.missingOrInvalidHeaderValues(requiredHeaderValidators)(request) match {
-        case Nil => None
-        case errors: List[String] => Some(s"Missing or invalid headers: ${errors.mkString(", ")}")
+      val validatedNel: HeadersValidation = AntiFraudHeadersValidator.validate(requiredHeaderValidators)(request)
+
+      validatedNel match {
+        case Valid(_: Unit) => None
+        case Invalid(nel: NonEmptyList[String]) => Some(nel.toList).map(ErrorResponse(_))
       }
 
-      missingOrInvalidHeaderValues.map(ErrorResponse(_))
     }
 
   }

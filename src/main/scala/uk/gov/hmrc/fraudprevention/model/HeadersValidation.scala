@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.fraudprevention.model
 
+import cats.data.ValidatedNel
 
-case class ErrorResponse(code: String, message: String)
+object HeadersValidation {
 
-case object ErrorResponse {
-
-  private lazy val errorCode = "MISSING_OR_INVALID_HEADERS"
-
-  def apply(errorMessages: List[String]): ErrorResponse = {
-    ErrorResponse(errorCode, errorMessages.mkString(", "))
-  }
+  // At the moment we are not interested in the header name-values, thus we return `Unit` in case of success.
+  // But we could use ValidatedNel[String, Map[String, List[String]],
+  // where the successful case returns the list of values for each single validated header
+  type HeadersValidation = ValidatedNel[String, Unit]
 
 }

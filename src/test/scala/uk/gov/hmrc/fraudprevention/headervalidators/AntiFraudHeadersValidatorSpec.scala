@@ -16,39 +16,96 @@
 
 package uk.gov.hmrc.fraudprevention.headervalidators
 
+import cats.data.Validated.Invalid
+import cats.implicits._
+import play.api.http.ContentTypes._
+import play.api.http.HeaderNames._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator._
-import uk.gov.hmrc.fraudprevention.headervalidators.impl.GovClientPublicPortHeaderValidator
+import uk.gov.hmrc.fraudprevention.headervalidators.impl._
 import uk.gov.hmrc.play.test.UnitSpec
 
 class AntiFraudHeadersValidatorSpec extends UnitSpec {
 
-  "AntiFraudHeadersValidator" should {
+  private val headerValidators = List(GovClientPublicPortHeaderValidator, GovClientColourDepthHeaderValidator)
+
+  "AntiFraudHeadersValidator.buildRequiredHeaderValidators()" should {
 
     "fail to build the header validators in case of unexpected header names" in {
+
       val ex = intercept[IllegalArgumentException] {
         val requiredHeaders = List("Fake-Header-Name", "Cache-Control")
         buildRequiredHeaderValidators(requiredHeaders)
       }
-      ex.getMessage shouldBe s"There are no implementations for these headers: Fake-Header-Name, Cache-Control"
+
+      ex.getMessage shouldBe "There are no implementations for these headers: Fake-Header-Name, Cache-Control"
+
     }
 
-    "return the header names for requests not including the required headers" in {
-      val requiredHeaders = List(GovClientPublicPortHeaderValidator.headerName)
-      val headerValidators = buildRequiredHeaderValidators(requiredHeaders)
-      missingOrInvalidHeaderValues(headerValidators)(FakeRequest()) shouldBe requiredHeaders
+    "build the header validators from the header names" in {
+
+      val requiredHeaders = List(GovClientPublicPortHeaderValidator.headerName,
+        GovClientColourDepthHeaderValidator.headerName)
+
+      buildRequiredHeaderValidators(requiredHeaders) shouldBe headerValidators
+
     }
 
-    "return the header names for requests having required headers with unexpected values" in {
-      val requiredHeaders = List(GovClientPublicPortHeaderValidator.headerName)
-      val headerValidators = buildRequiredHeaderValidators(requiredHeaders)
-      missingOrInvalidHeaderValues(headerValidators)(FakeRequest().withHeaders(GovClientPublicPortHeaderValidator.headerName -> "")) shouldBe requiredHeaders
+  }
+
+  "AntiFraudHeadersValidator.validate()" should {
+
+    val extraHeaders: Seq[(String, String)] = Seq(
+      USER_AGENT -> "Mozilla 4.2",
+      CONTENT_TYPE -> JSON,
+      ACCEPT -> JSON
+    )
+
+    "succeed to validate a request containing all the required headers with valid values" in {
+
+      val request = FakeRequest().withHeaders(
+        GovClientPublicPortHeaderValidator.headerName -> "12345",
+        GovClientColourDepthHeaderValidator.headerName -> "24"
+      ).withHeaders(extraHeaders:_*)
+
+      validate(headerValidators)(request) shouldBe ().validNel
+
     }
 
-    "return an empty list for requests that include the required headers with valid values" in {
-      val requiredHeaders = List(GovClientPublicPortHeaderValidator.headerName)
-      val headerValidators = buildRequiredHeaderValidators(requiredHeaders)
-      missingOrInvalidHeaderValues(headerValidators)(FakeRequest().withHeaders(GovClientPublicPortHeaderValidator.headerName -> "111")) shouldBe List()
+    "combine the validation error messages for all invalid headers" in {
+
+      val request = FakeRequest().withHeaders(
+        GovClientPublicPortHeaderValidator.headerName -> "-1",
+        GovClientColourDepthHeaderValidator.headerName -> "-00"
+      )
+
+      val Invalid(nel) = validate(headerValidators)(request)
+      nel.toList shouldBe List("Invalid port number for header Gov-Client-Public-Port: -1",
+        "Regular expression not matching for header Gov-Client-Colour-Depth: -00")
+
+    }
+
+    "fail to validate a request missing some of the required headers" in {
+
+      val request = FakeRequest().withHeaders(
+        GovClientPublicPortHeaderValidator.headerName -> "23"
+      )
+
+      validate(headerValidators)(request) shouldBe "Header Gov-Client-Colour-Depth is missing".invalidNel
+
+    }
+
+    "fail to validate a request containing multiple values for required headers that must have one value only" in {
+
+      val request = FakeRequest().withHeaders(
+        GovClientPublicPortHeaderValidator.headerName -> "123",
+        GovClientPublicPortHeaderValidator.headerName -> "456"
+      ).withHeaders(
+        GovClientColourDepthHeaderValidator.headerName -> "12"
+      )
+
+      validate(headerValidators)(request) shouldBe "Multiple values for header Gov-Client-Public-Port".invalidNel
+
     }
 
   }

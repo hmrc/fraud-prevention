@@ -26,9 +26,11 @@ lazy val library = (project in file("."))
     name := "fraud-prevention",
     targetJvm := "jvm-1.8",
     crossScalaVersions := Seq("2.11.11"),
+    scalacOptions += "-Ypartial-unification",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play"      % "2.5.12" % "provided",
       "org.scalatest"     %% "scalatest" % "3.0.4"  % "test",
+      "org.typelevel"     %% "cats-core" % "1.1.0",
       "uk.gov.hmrc"       %% "hmrctest"  % "2.3.0"  % "test"
     ),
     resolvers := Seq(
@@ -37,6 +39,6 @@ lazy val library = (project in file("."))
   )
 
 // Coverage configuration
-coverageMinimum := 76
+coverageMinimum := 90
 coverageFailOnMinimum := true
 coverageExcludedPackages := "<empty>;com.kenshoo.play.metrics.*;.*definition.*;prod.*;testOnlyDoNotUseInAppConf.*;app.*;uk.gov.hmrc.BuildInfo"

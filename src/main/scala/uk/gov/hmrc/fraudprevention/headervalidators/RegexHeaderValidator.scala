@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fraudprevention.model
+package uk.gov.hmrc.fraudprevention.headervalidators
 
+import scala.util.matching.Regex
 
-case class ErrorResponse(code: String, message: String)
+trait RegexHeaderValidator extends HeaderValidator {
 
-case object ErrorResponse {
+  protected def headerValueRegexPattern: Regex
 
-  private lazy val errorCode = "MISSING_OR_INVALID_HEADERS"
+  private def hasMatch: String => Boolean = {
+    headerValueRegexPattern.findFirstIn(_).nonEmpty
+  }
 
-  def apply(errorMessages: List[String]): ErrorResponse = {
-    ErrorResponse(errorCode, errorMessages.mkString(", "))
+  protected final def validateHeaderValue(headerValue: String): Either[String, Unit] = {
+    if (hasMatch(headerValue)) Right(())
+    else Left(s"Regular expression not matching for header $headerName: $headerValue")
   }
 
 }

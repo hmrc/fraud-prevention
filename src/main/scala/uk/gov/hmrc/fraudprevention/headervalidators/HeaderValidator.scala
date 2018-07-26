@@ -16,24 +16,38 @@
 
 package uk.gov.hmrc.fraudprevention.headervalidators
 
+import cats.implicits._
 import play.api.mvc.RequestHeader
+import uk.gov.hmrc.fraudprevention.model.HeadersValidation.HeadersValidation
 
 trait HeaderValidatorUtils {
 
-  protected def requestHeaderValues(request: RequestHeader, headerName: String): Seq[String] = {
-    request.headers.toMap.getOrElse(headerName, Seq())
+  protected final def requestHeaderValues(request: RequestHeader, headerName: String): List[String] = {
+    request.headers.toMap.getOrElse(headerName, Nil).toList
   }
 
 }
 
 trait HeaderValidator extends HeaderValidatorUtils {
 
-  protected def hasOneHeaderValueOnly(request: RequestHeader): Boolean = {
-    requestHeaderValues(request, headerName).size == 1
-  }
-
   def headerName: String
 
-  def isValidHeader(request: RequestHeader): Boolean
+  protected final def validateHeaderIsUnique(request: RequestHeader): Either[String, String] = {
+    // We are assuming that headers must have at most one value,
+    // but for some headers we might want to allow multiple values.
+    requestHeaderValues(request, headerName) match {
+      case Nil => Left(s"Header $headerName is missing")
+      case headerValue :: Nil => Right(headerValue)
+      case _ => Left(s"Multiple values for header $headerName")
+    }
+  }
+
+  protected def validateHeaderValue(headerValue: String): Either[String, Unit]
+
+  final def validate(request: RequestHeader): HeadersValidation = {
+    // Might be better to return Either[String, Unit] instead of ValidatedNel[String, Unit]
+    // so that the Cats is hidden to our library users
+    validateHeaderIsUnique(request).flatMap(validateHeaderValue).toValidatedNel
+  }
 
 }
