@@ -45,8 +45,6 @@ trait HeaderValidator extends HeaderValidatorUtils {
   protected def validateHeaderValue(headerValue: String): Either[String, Unit]
 
   final def validate(request: RequestHeader): HeadersValidation = {
-    // Might be better to return Either[String, Unit] instead of ValidatedNel[String, Unit]
-    // so that the Cats is hidden to our library users
     validateHeaderIsUnique(request).flatMap(validateHeaderValue).toValidatedNel
   }
 

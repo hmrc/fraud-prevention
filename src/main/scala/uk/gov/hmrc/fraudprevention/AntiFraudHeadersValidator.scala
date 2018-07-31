@@ -34,7 +34,13 @@ object AntiFraudHeadersValidator {
 
   private lazy val headerNames: List[String] = headerValidators.map(_.headerName)
 
-  // To be called only once, at start-up of the API microservice
+  /**
+    * Build the [[HeaderValidator]]s that will be used for validating the API incoming requests.
+    * This method should be called only once, at start-up of the API microservice.
+    *
+    * @param requiredHeaders The names of required headers
+    * @return The [[HeaderValidator]]s that will be used for validating the API incoming requests.
+    */
   def buildRequiredHeaderValidators(requiredHeaders: List[String]): List[HeaderValidator] = {
 
     val (validatedHeaders, unsupportedHeaders) = requiredHeaders.partition( headerNames.contains )
@@ -46,7 +52,14 @@ object AntiFraudHeadersValidator {
     headerValidators.filter ( h => validatedHeaders.contains ( h.headerName ) )
   }
 
-  // To be called for each API incoming request
+  /**
+    * Validate the headers of the request by using requiredHeaders.
+    * This method should be called for each API incoming request.
+    *
+    * @param requiredHeaders The [[HeaderValidator]]s that will be used for validating the request.
+    * @param request The incoming request.
+    * @return Either the [[Unit]] type, for a valid request, or the errors found in the request headers.
+    */
   def validate(requiredHeaders: List[HeaderValidator])(request: RequestHeader): Either[List[String], Unit] = {
 
     def validate: HeadersValidation = {
