@@ -25,6 +25,9 @@ import uk.gov.hmrc.fraudprevention.model.{ErrorConversion, ErrorResponse}
 
 import scala.concurrent.Future
 
+/**
+  * Object for validating the fraud prevention headers.
+  */
 object AntiFraudHeadersValidator {
 
   private lazy val headerValidators: List[HeaderValidator] = List(
@@ -35,11 +38,11 @@ object AntiFraudHeadersValidator {
   private lazy val headerNames: List[String] = headerValidators.map(_.headerName)
 
   /**
-    * Build the [[HeaderValidator]]s that will be used for validating the API incoming requests.
+    * Builds the [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s that will be used for validating the API incoming requests.
     * This method should be called only once, at start-up of the API microservice.
     *
-    * @param requiredHeaders The names of required headers
-    * @return The [[HeaderValidator]]s that will be used for validating the API incoming requests.
+    * @param requiredHeaders The names of required fraud prevention headers.
+    * @return The [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s that will be used for validating the API incoming requests.
     */
   def buildRequiredHeaderValidators(requiredHeaders: List[String]): List[HeaderValidator] = {
 
@@ -53,12 +56,12 @@ object AntiFraudHeadersValidator {
   }
 
   /**
-    * Validate the headers of the request by using requiredHeaders.
+    * Validates the headers of the request by using the given [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s.
     * This method should be called for each API incoming request.
     *
-    * @param requiredHeaders The [[HeaderValidator]]s that will be used for validating the request.
+    * @param requiredHeaders The [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s that will be used for validating the request.
     * @param request The incoming request.
-    * @return Either the [[Unit]] type, for a valid request, or the errors found in the request headers.
+    * @return Either the [[scala.Unit Unit]] type if the request has valid headers, the errors found otherwise.
     */
   def validate(requiredHeaders: List[HeaderValidator])(request: RequestHeader): Either[List[String], Unit] = {
 
@@ -71,13 +74,28 @@ object AntiFraudHeadersValidator {
 
 }
 
+/**
+  * Factory for creating Play [[play.api.mvc.ActionFilter ActionFilter]]s that validate incoming requests using [[uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator AntiFraudHeadersValidator]].
+  */
 object AntiFraudHeadersValidatorActionFilter extends ErrorConversion {
 
+  /**
+    * Creates an [[play.api.mvc.ActionFilter ActionFilter]] that validates API incoming requests depending on the given required headers.
+    *
+    * @param requiredHeaders The names of the required headers.
+    * @return The [[play.api.mvc.ActionFilter ActionFilter]].
+    */
   def actionFilterFromHeaderNames(requiredHeaders: List[String]) = {
     val requiredHeaderValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
     actionFilterFromHeaderValidators(requiredHeaderValidators)
   }
 
+  /**
+    * Creates an [[play.api.mvc.ActionFilter ActionFilter]] that validates API incoming requests using the given [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s.
+    *
+    * @param requiredHeaderValidators The [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s to be used for validating the incoming requests.
+    * @return The [[play.api.mvc.ActionFilter ActionFilter]].
+    */
   def actionFilterFromHeaderValidators(requiredHeaderValidators: List[HeaderValidator]) = new ActionBuilder[Request] with ActionFilter[Request] {
 
     override protected def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
