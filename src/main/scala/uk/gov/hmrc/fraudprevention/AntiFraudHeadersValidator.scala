@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.fraudprevention
 
-import cats.data.NonEmptyList
-import cats.data.Validated.{Invalid, Valid}
 import cats.implicits._
 import play.api.mvc._
 import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
@@ -49,10 +47,13 @@ object AntiFraudHeadersValidator {
   }
 
   // To be called for each API incoming request
-  def validate(requiredHeaders: List[HeaderValidator])(request: RequestHeader): HeadersValidation = {
-    // Might be better to return Either[String, Unit] instead of ValidatedNel[String, Unit]
-    // so that the Cats is hidden to our library users
-    requiredHeaders.map( _.validate(request) ).combineAll
+  def validate(requiredHeaders: List[HeaderValidator])(request: RequestHeader): Either[List[String], Unit] = {
+
+    def validate: HeadersValidation = {
+      requiredHeaders.map( _.validate(request) ).combineAll
+    }
+
+    validate.toEither.leftMap(_.toList)
   }
 
 }
@@ -70,11 +71,9 @@ object AntiFraudHeadersValidatorActionFilter extends ErrorConversion {
 
       implicit val r: Request[A] = request
 
-      val validatedNel: HeadersValidation = AntiFraudHeadersValidator.validate(requiredHeaderValidators)(request)
-
-      validatedNel match {
-        case Valid(_: Unit) => None
-        case Invalid(nel: NonEmptyList[String]) => Some(nel.toList).map(ErrorResponse(_))
+      AntiFraudHeadersValidator.validate(requiredHeaderValidators)(request) match {
+        case Right(_) => None
+        case Left(errors: List[String]) => Some(errors).map(ErrorResponse(_))
       }
 
     }

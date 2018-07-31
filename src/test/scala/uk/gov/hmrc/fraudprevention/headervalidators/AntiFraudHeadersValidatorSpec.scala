@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.fraudprevention.headervalidators
 
-import cats.data.Validated.Invalid
-import cats.implicits._
 import play.api.http.ContentTypes._
 import play.api.http.HeaderNames._
 import play.api.test.FakeRequest
@@ -68,7 +66,7 @@ class AntiFraudHeadersValidatorSpec extends UnitSpec {
         GovClientColourDepthHeaderValidator.headerName -> "24"
       ).withHeaders(extraHeaders:_*)
 
-      validate(headerValidators)(request) shouldBe ().validNel
+      validate(headerValidators)(request) shouldBe Right(())
 
     }
 
@@ -79,8 +77,8 @@ class AntiFraudHeadersValidatorSpec extends UnitSpec {
         GovClientColourDepthHeaderValidator.headerName -> "-00"
       )
 
-      val Invalid(nel) = validate(headerValidators)(request)
-      nel.toList shouldBe List("Invalid port number for header Gov-Client-Public-Port: -1",
+      val Left(errors) = validate(headerValidators)(request)
+      errors shouldBe List("Invalid port number for header Gov-Client-Public-Port: -1",
         "Regular expression not matching for header Gov-Client-Colour-Depth: -00")
 
     }
@@ -91,7 +89,7 @@ class AntiFraudHeadersValidatorSpec extends UnitSpec {
         GovClientPublicPortHeaderValidator.headerName -> "23"
       )
 
-      validate(headerValidators)(request) shouldBe "Header Gov-Client-Colour-Depth is missing".invalidNel
+      validate(headerValidators)(request) shouldBe Left(List("Header Gov-Client-Colour-Depth is missing"))
 
     }
 
@@ -104,7 +102,7 @@ class AntiFraudHeadersValidatorSpec extends UnitSpec {
         GovClientColourDepthHeaderValidator.headerName -> "12"
       )
 
-      validate(headerValidators)(request) shouldBe "Multiple values for header Gov-Client-Public-Port".invalidNel
+      validate(headerValidators)(request) shouldBe Left(List("Multiple values for header Gov-Client-Public-Port"))
 
     }
 

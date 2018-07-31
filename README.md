@@ -41,13 +41,11 @@ val headerValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(r
 
 Then, once you have the validators for all your required headers, for each incoming request to the API, your controllers have to execute the following code:
 ``` scala
-import cats.data.NonEmptyList
-import cats.data.Validated.{Invalid, Valid}
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
 AntiFraudHeadersValidator.validate(headerValidators)(request) match {
-  case Valid(_: Unit) => // you should continue processing the request
-  case Invalid(errors: NonEmptyList[String]) => // you should block the request (because of the missing or invalid headers)
+  case Right(_) => // you should continue processing the request
+  case Left(errors: List[String]) => // you should block the request (because of the missing or invalid headers)
 }
 ```
 
