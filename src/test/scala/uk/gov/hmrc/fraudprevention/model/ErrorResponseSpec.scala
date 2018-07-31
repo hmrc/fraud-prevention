@@ -22,9 +22,14 @@ class ErrorResponseSpec extends UnitSpec {
 
   "ErrorResponse" should {
 
-    "build the correct error response" in {
+    "build the correct error response from a String" in {
       val msg = "Something is broken"
-      ErrorResponse(msg) shouldBe ErrorResponse("MISSING_OR_INVALID_HEADERS", msg)
+      ErrorResponse(List(msg)) shouldBe ErrorResponse("MISSING_OR_INVALID_HEADERS", msg)
+    }
+
+    "build the correct error response from a List" in {
+      val msg = List("error 1", "error 2", "error 3")
+      ErrorResponse(msg) shouldBe ErrorResponse("MISSING_OR_INVALID_HEADERS", "error 1, error 2, error 3")
     }
 
   }

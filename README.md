@@ -1,4 +1,3 @@
-
 # Fraud Prevention
 
  [ ![Download](https://api.bintray.com/packages/hmrc/releases/fraud-prevention/images/download.svg) ](https://bintray.com/hmrc/releases/fraud-prevention/_latestVersion)
@@ -44,9 +43,9 @@ Then, once you have the validators for all your required headers, for each incom
 ``` scala
 import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
 
-AntiFraudHeadersValidator.missingOrInvalidHeaderValues(headerValidators)(request) match {
-  case None => // you should continue processing the request
-  case Some(missingOrInvalidHeaders: List[String]) => // you should block the request (because of the missing or invalid headers)
+AntiFraudHeadersValidator.validate(headerValidators)(request) match {
+  case Right(_) => // you should continue processing the request
+  case Left(errors: List[String]) => // you should block the request (because of the missing or invalid headers)
 }
 ```
 

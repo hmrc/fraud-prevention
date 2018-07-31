@@ -29,7 +29,7 @@ class ErrorConversionSpec extends UnitSpec with ErrorConversion {
     "build the correct JSON response" in {
 
       val msg = "Something is broken"
-      val errorResponse = ErrorResponse(msg)
+      val errorResponse = ErrorResponse(List(msg))
 
       toResult(errorResponse)(FakeRequest()) shouldBe Status(PRECONDITION_FAILED)(Json.toJson(errorResponse))
     }

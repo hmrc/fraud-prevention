@@ -21,11 +21,11 @@ import cats.implicits._
 import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
 import uk.gov.hmrc.play.test.UnitSpec
 
-class GovClientPublicPortHeaderValidatorSpec extends HeaderValidatorBaseSpec with UnitSpec {
+class GovClientColourDepthHeaderValidatorSpec extends HeaderValidatorBaseSpec with UnitSpec {
 
-  override protected val headerValidator: HeaderValidator = GovClientPublicPortHeaderValidator
+  override protected val headerValidator: HeaderValidator = GovClientColourDepthHeaderValidator
 
-  "GovClientPublicPortHeaderValidator" should {
+  "GovClientColourDepthHeaderValidator" should {
 
     s"fail to validate the ${headerValidator.headerName} header if there is no value" in {
       val headerValues = None
@@ -34,57 +34,47 @@ class GovClientPublicPortHeaderValidatorSpec extends HeaderValidatorBaseSpec wit
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it is the empty string" in {
-      val port = ""
-      val headerValues = Some(Seq(port))
+      val value = ""
+      val headerValues = Some(Seq(value))
       val Invalid(nel) = validateRequest(headerValues)
-      nel.toList shouldBe List(s"Invalid port number for header ${headerValidator.headerName}: $port")
+      nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it does not contain a number" in {
-      val port = "a"
-      val headerValues = Some(Seq(port))
+      val value = "a"
+      val headerValues = Some(Seq(value))
       val Invalid(nel) = validateRequest(headerValues)
-      nel.toList shouldBe List(s"Invalid port number for header ${headerValidator.headerName}: $port")
+      nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it is a negative number" in {
-      val port = -4
-      val headerValues = Some(Seq(port.toString))
+      val value = -4
+      val headerValues = Some(Seq(value.toString))
       val Invalid(nel) = validateRequest(headerValues)
-      nel.toList shouldBe List(s"Invalid port number for header ${headerValidator.headerName}: $port")
-    }
-
-    s"fail to validate the ${headerValidator.headerName} header if it is zero" in {
-      val port = 0
-      val headerValues = Some(Seq(port.toString))
-      val Invalid(nel) = validateRequest(headerValues)
-      nel.toList shouldBe List(s"Invalid port number for header ${headerValidator.headerName}: $port")
-    }
-
-    s"fail to validate the ${headerValidator.headerName} header if it bigger than 65535" in {
-      val port = 65536
-      val headerValues = Some(Seq(port.toString))
-      val Invalid(nel) = validateRequest(headerValues)
-      nel.toList shouldBe List(s"Invalid port number for header ${headerValidator.headerName}: $port")
+      nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it is a decimal number" in {
-      val port = 0.165
-      val headerValues = Some(Seq(port.toString))
+      val value = 34.165
+      val headerValues = Some(Seq(value.toString))
       val Invalid(nel) = validateRequest(headerValues)
-      nel.toList shouldBe List(s"Invalid port number for header ${headerValidator.headerName}: $port")
+      nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if there are multiple values" in {
-      val headerValues = Some(Seq("2333", "4445"))
+      val headerValues = Some(Seq("12", "24"))
       val Invalid(nel) = validateRequest(headerValues)
       nel.toList shouldBe List(s"Multiple values for header ${headerValidator.headerName}")
     }
 
-    s"validate the ${headerValidator.headerName} header if it is an allowed port number" in {
-      for (p <- 1 to 65535) {
-        val headerValues = Some(Seq(s"$p"))
-        validateRequest(headerValues) shouldBe ().validNel
+    s"validate the ${headerValidator.headerName} header if it is an allowed colour depth value" in {
+      for (d1 <- 0 to 9) {
+        for (d2 <- 0 to 9) {
+          for (d3 <- 0 to 9) {
+            val headerValues = Some(Seq(s"$d1$d2$d3"))
+            validateRequest(headerValues) shouldBe ().validNel
+          }
+        }
       }
     }
 

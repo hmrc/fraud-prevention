@@ -19,6 +19,7 @@ package uk.gov.hmrc.fraudprevention.headervalidators.impl
 import play.api.mvc.{AnyContent, Request}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator
+import uk.gov.hmrc.fraudprevention.model.HeadersValidation.HeadersValidation
 import uk.gov.hmrc.play.test.UnitSpec
 
 trait HeaderValidatorBaseSpec extends UnitSpec {
@@ -32,8 +33,9 @@ trait HeaderValidatorBaseSpec extends UnitSpec {
 
   protected def headerValidator: HeaderValidator
 
-  protected def validate(headerValues: Option[Seq[String]]): Boolean = {
-    headerValidator.isValidHeader(buildRequest(headerValues, headerValidator.headerName))
+  protected def validateRequest(headerValues: Option[Seq[String]]): HeadersValidation = {
+    val request = buildRequest(headerValues, headerValidator.headerName)
+    headerValidator.validate(request)
   }
 
 }
