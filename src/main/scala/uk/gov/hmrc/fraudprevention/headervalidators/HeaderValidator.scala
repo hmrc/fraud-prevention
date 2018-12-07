@@ -36,7 +36,7 @@ trait HeaderValidator extends HeaderValidatorUtils {
     // We are assuming that headers must have at most one value,
     // but for some headers we might want to allow multiple values.
     requestHeaderValues(request, headerName) match {
-      case Nil => Left(s"Header $headerName is missing")
+      case Nil => Left("")
       case headerValue :: Nil => Right(headerValue)
       case _ => Left(s"Multiple values for header $headerName")
     }

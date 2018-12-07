@@ -89,7 +89,7 @@ class AntiFraudHeadersValidatorSpec extends UnitSpec {
         GovClientPublicPortHeaderValidator.headerName -> "23"
       )
 
-      validate(headerValidators)(request) shouldBe Left(List("Header Gov-Client-Colour-Depth is missing"))
+      validate(headerValidators)(request) shouldBe Left(List(""))
 
     }
 

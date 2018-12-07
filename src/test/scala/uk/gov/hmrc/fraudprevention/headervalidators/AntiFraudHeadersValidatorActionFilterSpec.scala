@@ -59,7 +59,7 @@ class AntiFraudHeadersValidatorActionFilterSpec extends UnitSpec with WithFakeAp
         val result: Result = await(action(request))
 
         status(result) shouldBe PRECONDITION_FAILED
-        jsonBodyOf(result) shouldBe Json.obj("code" -> "MISSING_OR_INVALID_HEADERS", "message" -> "Header Gov-Client-Device-ID is missing")
+        jsonBodyOf(result) shouldBe Json.obj("code" -> "MISSING_OR_INVALID_HEADERS", "message" -> "")
       }
     }
   }
