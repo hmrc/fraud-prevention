@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import sbt._
 import sbt.Keys._
+import sbt._
 import uk.gov.hmrc.DefaultBuildSettings.targetJvm
-import uk.gov.hmrc.versioning.SbtGitVersioning
-import uk.gov.hmrc.SbtAutoBuildPlugin
-import uk.gov.hmrc.SbtArtifactory
-import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
-import _root_.play.sbt.PlayScala
-import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.SbtArtifactory.autoImport.makePublicallyAvailableOnBintray
+import uk.gov.hmrc.{SbtArtifactory, SbtAutoBuildPlugin}
+import uk.gov.hmrc.versioning.SbtGitVersioning
+import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 lazy val library = (project in file("."))
   .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning, SbtArtifactory)
@@ -31,6 +28,7 @@ lazy val library = (project in file("."))
     scalaVersion := "2.11.11",
     name := "fraud-prevention",
     majorVersion := 0,
+    makePublicallyAvailableOnBintray := true,
     targetJvm := "jvm-1.8",
     crossScalaVersions := Seq("2.11.11"),
     scalacOptions += "-Ypartial-unification",
