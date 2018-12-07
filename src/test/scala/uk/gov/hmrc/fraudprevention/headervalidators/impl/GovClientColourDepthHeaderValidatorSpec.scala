@@ -23,47 +23,47 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class GovClientColourDepthHeaderValidatorSpec extends HeaderValidatorBaseSpec with UnitSpec {
 
-  override protected val headerValidator: HeaderValidator = GovClientColourDepthHeaderValidator
+  val headerValidator: HeaderValidator = GovClientColourDepthHeaderValidator
 
   "GovClientColourDepthHeaderValidator" should {
 
     s"fail to validate the ${headerValidator.headerName} header if there is no value" in {
       val headerValues = None
-      val Invalid(nel) = validateRequest(headerValues)
+      val Invalid(nel) = validateRequest(headerValidator, headerValues)
       nel.toList shouldBe List(s"Header ${headerValidator.headerName} is missing")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it is the empty string" in {
       val value = ""
       val headerValues = Some(Seq(value))
-      val Invalid(nel) = validateRequest(headerValues)
+      val Invalid(nel) = validateRequest(headerValidator, headerValues)
       nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it does not contain a number" in {
       val value = "a"
       val headerValues = Some(Seq(value))
-      val Invalid(nel) = validateRequest(headerValues)
+      val Invalid(nel) = validateRequest(headerValidator, headerValues)
       nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it is a negative number" in {
       val value = -4
       val headerValues = Some(Seq(value.toString))
-      val Invalid(nel) = validateRequest(headerValues)
+      val Invalid(nel) = validateRequest(headerValidator, headerValues)
       nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it is a decimal number" in {
       val value = 34.165
       val headerValues = Some(Seq(value.toString))
-      val Invalid(nel) = validateRequest(headerValues)
+      val Invalid(nel) = validateRequest(headerValidator, headerValues)
       nel.toList shouldBe List(s"Regular expression not matching for header ${headerValidator.headerName}: $value")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if there are multiple values" in {
       val headerValues = Some(Seq("12", "24"))
-      val Invalid(nel) = validateRequest(headerValues)
+      val Invalid(nel) = validateRequest(headerValidator, headerValues)
       nel.toList shouldBe List(s"Multiple values for header ${headerValidator.headerName}")
     }
 
@@ -72,7 +72,7 @@ class GovClientColourDepthHeaderValidatorSpec extends HeaderValidatorBaseSpec wi
         for (d2 <- 0 to 9) {
           for (d3 <- 0 to 9) {
             val headerValues = Some(Seq(s"$d1$d2$d3"))
-            validateRequest(headerValues) shouldBe ().validNel
+            validateRequest(headerValidator, headerValues) shouldBe ().validNel
           }
         }
       }

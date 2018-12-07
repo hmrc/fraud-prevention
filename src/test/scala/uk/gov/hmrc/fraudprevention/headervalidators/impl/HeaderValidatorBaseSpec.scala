@@ -31,9 +31,7 @@ trait HeaderValidatorBaseSpec extends UnitSpec {
     }
   }
 
-  protected def headerValidator: HeaderValidator
-
-  protected def validateRequest(headerValues: Option[Seq[String]]): HeadersValidation = {
+  protected def validateRequest(headerValidator: HeaderValidator, headerValues: Option[Seq[String]]): HeadersValidation = {
     val request = buildRequest(headerValues, headerValidator.headerName)
     headerValidator.validate(request)
   }

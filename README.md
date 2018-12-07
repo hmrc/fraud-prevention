@@ -50,11 +50,33 @@ AntiFraudHeadersValidator.validate(headerValidators)(request) match {
 ```
 
 If you use the `AntiFraudHeadersValidatorActionFilter`, your controller would look simpler.
-We suggest two alternative implementations.
+You just have to wrap your code with the filter, which will return a precondition failed (412) error if the validation of the headers fails.
+We suggest three alternative implementations.
 
-1. By creating the Play `ActionFilter` from the required header names:
+1. By creating the Play `ActionFilter` using the default headers:
 ``` scala
-import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
+import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidatorActionFilter
+
+// this can be reused for each controller that require the same headers
+lazy val fraudPreventionActionFilter = AntiFraudHeadersValidatorActionFilter.actionFilterWithDefaultHeaders
+
+def handleRequest(): Action[AnyContent] = fraudPreventionActionFilter.async { implicit request =>
+  // controller code to add
+}
+```
+
+The default headers are:
+- Gov-Client-Device-ID
+- Gov-Client-User-IDs
+- Gov-Client-Timezone
+- Gov-Client-Local-IPs
+- Gov-Vendor-Version
+- Gov-Vendor-License-IDs
+- Gov-Client-Connection-Method
+
+2. By creating the Play `ActionFilter` from the required header names:
+``` scala
+import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidatorActionFilter
 
 lazy val requiredHeaders = List("Gov-Client-Public-Port")
 
@@ -66,9 +88,9 @@ def handleRequest(): Action[AnyContent] = fraudPreventionActionFilter.async { im
 }
 ```
 
-2. By creating the Play `ActionFilter` from the header validators:
+3. By creating the Play `ActionFilter` from the header validators:
 ``` scala
-import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator
+import uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidatorActionFilter
 import uk.gov.hmrc.fraudprevention.headervalidators.impl.GovClientPublicPortHeaderValidator
 
 lazy val headerValidators = List(GovClientPublicPortHeaderValidator)

@@ -31,8 +31,9 @@ import scala.concurrent.Future
 object AntiFraudHeadersValidator {
 
   private lazy val headerValidators: List[HeaderValidator] = List(
-    GovClientPublicPortHeaderValidator,
-    GovClientColourDepthHeaderValidator
+    GovClientPublicPortHeaderValidator, GovClientColourDepthHeaderValidator, GovClientDeviceIdHeaderValidator,
+    GovClientUserIdHeaderValidator, GovClientTimezoneHeaderValidator, GovClientLocalIpHeaderValidator,
+    GovVendorVersionHeaderValidator, GovVendorLicenseIdHeaderValidator, GovClientConnectionMethodHeaderValidator
   )
 
   private lazy val headerNames: List[String] = headerValidators.map(_.headerName)
@@ -75,9 +76,27 @@ object AntiFraudHeadersValidator {
 }
 
 /**
-  * Factory for creating Play [[play.api.mvc.ActionFilter ActionFilter]]s that validate incoming requests using [[uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator AntiFraudHeadersValidator]].
+  * Factory for creating Play [[play.api.mvc.ActionFilter ActionFilter]]s that validate incoming requests using
+  * [[uk.gov.hmrc.fraudprevention.AntiFraudHeadersValidator AntiFraudHeadersValidator]].
   */
 object AntiFraudHeadersValidatorActionFilter extends ErrorConversion {
+
+  private lazy val defaultHeaderValidators: List[HeaderValidator] = List(
+    GovClientDeviceIdHeaderValidator, GovClientUserIdHeaderValidator, GovClientTimezoneHeaderValidator,
+    GovClientLocalIpHeaderValidator, GovVendorVersionHeaderValidator, GovVendorLicenseIdHeaderValidator,
+    GovClientConnectionMethodHeaderValidator
+  )
+
+  /**
+    *
+    * Creates an [[play.api.mvc.ActionFilter ActionFilter]] that validates API incoming requests using the default
+    * [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s.
+    *
+    * @return The [[play.api.mvc.ActionFilter ActionFilter]].
+    */
+  def actionFilterWithDefaultHeaders: ActionBuilder[Request] with ActionFilter[Request] = {
+    actionFilterFromHeaderValidators(defaultHeaderValidators)
+  }
 
   /**
     * Creates an [[play.api.mvc.ActionFilter ActionFilter]] that validates API incoming requests depending on the given required headers.
@@ -85,18 +104,21 @@ object AntiFraudHeadersValidatorActionFilter extends ErrorConversion {
     * @param requiredHeaders The names of the required headers.
     * @return The [[play.api.mvc.ActionFilter ActionFilter]].
     */
-  def actionFilterFromHeaderNames(requiredHeaders: List[String]) = {
+  def actionFilterFromHeaderNames(requiredHeaders: List[String]): ActionBuilder[Request] with ActionFilter[Request] = {
     val requiredHeaderValidators = AntiFraudHeadersValidator.buildRequiredHeaderValidators(requiredHeaders)
     actionFilterFromHeaderValidators(requiredHeaderValidators)
   }
 
   /**
-    * Creates an [[play.api.mvc.ActionFilter ActionFilter]] that validates API incoming requests using the given [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s.
+    * Creates an [[play.api.mvc.ActionFilter ActionFilter]] that validates API incoming requests using the given
+    * [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s.
     *
-    * @param requiredHeaderValidators The [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s to be used for validating the incoming requests.
+    * @param requiredHeaderValidators The [[uk.gov.hmrc.fraudprevention.headervalidators.HeaderValidator HeaderValidator]]s
+    *                                 to be used for validating the incoming requests.
     * @return The [[play.api.mvc.ActionFilter ActionFilter]].
     */
-  def actionFilterFromHeaderValidators(requiredHeaderValidators: List[HeaderValidator]) = new ActionBuilder[Request] with ActionFilter[Request] {
+  def actionFilterFromHeaderValidators(requiredHeaderValidators: List[HeaderValidator]): ActionBuilder[Request] with ActionFilter[Request] =
+    new ActionBuilder[Request] with ActionFilter[Request] {
 
     override protected def filter[A](request: Request[A]): Future[Option[Result]] = Future.successful {
 
