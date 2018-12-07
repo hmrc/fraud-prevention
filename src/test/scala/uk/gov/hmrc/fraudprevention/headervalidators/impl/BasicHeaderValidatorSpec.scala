@@ -41,7 +41,7 @@ class BasicHeaderValidatorSpec extends HeaderValidatorBaseSpec with UnitSpec {
       s"fail to validate the ${headerValidator.headerName} header if there is no value" in {
         val headerValues = None
         val Invalid(nel) = validateRequest(headerValidator, headerValues)
-        nel.toList shouldBe List(s"Header ${headerValidator.headerName} is missing")
+        nel.toList shouldBe List(s"")
       }
 
       s"fail to validate the ${headerValidator.headerName} header if it is the empty string" in {
