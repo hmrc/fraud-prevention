@@ -24,7 +24,7 @@ case object ErrorResponse {
   private lazy val errorCode = "MISSING_OR_INVALID_HEADERS"
 
   def apply(errorMessages: List[String]): ErrorResponse = {
-    ErrorResponse(errorCode, errorMessages.mkString(", "))
+    ErrorResponse(errorCode, errorMessages.filter(_.nonEmpty).mkString(", "))
   }
 
 }

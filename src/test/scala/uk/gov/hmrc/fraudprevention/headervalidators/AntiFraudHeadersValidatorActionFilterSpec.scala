@@ -52,9 +52,26 @@ class AntiFraudHeadersValidatorActionFilterSpec extends UnitSpec with WithFakeAp
         status(result) shouldBe NO_CONTENT
       }
 
-      "return an error response if any validations fail" in {
+      "return a comma separated list of errors in the message" in {
+        val x :: y = defaultHeaderValidators
+
         val action: Action[AnyContent] = actionFilter(NoContent)
-        val request = FakeRequest().withHeaders(defaultHeaderValidators.tail.map(hd => hd.headerName -> "value"):_*)
+        val request = FakeRequest().withHeaders(GovClientDeviceIdHeaderValidator.headerName -> "", GovClientUserIdHeaderValidator.headerName -> "")
+
+        val result: Result = await(action(request))
+
+        status(result) shouldBe PRECONDITION_FAILED
+        jsonBodyOf(result) shouldBe Json.obj(
+          "code" -> "MISSING_OR_INVALID_HEADERS",
+          "message" -> "Gov-Client-Device-ID must not be empty, Gov-Client-User-IDs must not be empty"
+        )
+      }
+
+      "return an empty message for missing headers" in {
+        val x :: y = defaultHeaderValidators
+
+        val action: Action[AnyContent] = actionFilter(NoContent)
+        val request = FakeRequest()
 
         val result: Result = await(action(request))
 
