@@ -30,7 +30,7 @@ class GovClientPublicPortHeaderValidatorSpec extends HeaderValidatorBaseSpec wit
     s"fail to validate the ${headerValidator.headerName} header if there is no value" in {
       val headerValues = None
       val Invalid(nel) = validateRequest(headerValidator, headerValues)
-      nel.toList shouldBe List(s"")
+      nel.toList shouldBe List("")
     }
 
     s"fail to validate the ${headerValidator.headerName} header if it is the empty string" in {
