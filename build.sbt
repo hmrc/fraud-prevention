@@ -33,10 +33,10 @@ lazy val library = (project in file("."))
     crossScalaVersions := Seq("2.11.11"),
     scalacOptions += "-Ypartial-unification",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play"      % "2.5.12" % "provided",
+      "com.typesafe.play" %% "play"      % "2.5.19" % "provided",
       "org.scalatest"     %% "scalatest" % "3.0.4"  % "test",
       "org.typelevel"     %% "cats-core" % "1.1.0",
-      "uk.gov.hmrc"       %% "hmrctest"  % "2.3.0"  % "test"
+      "uk.gov.hmrc"       %% "hmrctest"  % "3.3.0"  % "test"
     ),
     resolvers := Seq(
       Resolver.bintrayRepo("hmrc", "releases")
